@@ -2,6 +2,7 @@ using HotelBookingApi.Data;
 using HotelBookingApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
 
 namespace HotelBookingApi.Controllers;
 
@@ -39,25 +40,29 @@ public class BookingsController : ControllerBase
         return Ok(availableRooms);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateBooking([FromBody] Booking booking)
-    {
-        booking.StartDate = DateTime.SpecifyKind(booking.StartDate, DateTimeKind.Utc);
-        booking.EndDate = DateTime.SpecifyKind(booking.EndDate, DateTimeKind.Utc);
+[HttpPost]
+public async Task<IActionResult> CreateBooking([FromBody] Booking booking, [FromServices] IValidator<Booking> validator)
+{
+    var validationResult = await validator.ValidateAsync(booking);
+    if (!validationResult.IsValid)
+        return BadRequest(validationResult.Errors);
 
-        var overlap = await _context.Bookings.AnyAsync(b =>
-            b.RoomId == booking.RoomId &&
-            b.StartDate < booking.EndDate &&
-            b.EndDate > booking.StartDate);
+    booking.StartDate = DateTime.SpecifyKind(booking.StartDate, DateTimeKind.Utc);
+    booking.EndDate = DateTime.SpecifyKind(booking.EndDate, DateTimeKind.Utc);
 
-        if (overlap)
-            return BadRequest("Room already booked.");
+    var overlap = await _context.Bookings.AnyAsync(b =>
+        b.RoomId == booking.RoomId &&
+        b.StartDate < booking.EndDate &&
+        b.EndDate > booking.StartDate);
 
-        _context.Bookings.Add(booking);
-        await _context.SaveChangesAsync();
+    if (overlap)
+        return BadRequest("Номер уже забронирован.");
 
-        return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, booking);
-    }
+    _context.Bookings.Add(booking);
+    await _context.SaveChangesAsync();
+
+    return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, booking);
+}
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBooking(int id)

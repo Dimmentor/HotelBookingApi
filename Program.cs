@@ -1,5 +1,10 @@
+using FluentValidation;
+using FluentValidation.AspNetCore; // <-- важно
+using HotelBookingApi.Models;
+using HotelBookingApi.Validators;
 using HotelBookingApi.Data;
 using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +12,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<IValidator<Booking>, BookingValidator>();
+builder.Services.AddScoped<IValidator<Room>, RoomValidator>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -24,7 +31,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection(); // Убрано для избежания ошибки порта
 
 app.UseAuthorization();
 app.MapControllers();
