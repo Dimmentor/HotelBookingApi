@@ -1,0 +1,14 @@
+bin/
+obj/
+.vs/
+.env
+.env.*
+*.db
+*.user
+*.suo
+*.swp
+*.sln.docstates
+appsettings.Development.json
+/app/publish/
+/app/build/
+/postgres_data/
