@@ -106,3 +106,5 @@ POST /api/rooms
 (После этого можно снова проверить /api/bookings, удалено ли бронирование)
 
 PS: Можно поиграться с невалидными данными для проверки валидаторов
+
+![unnamed](https://github.com/user-attachments/assets/bb2a49f0-9b0d-43a1-8bda-9d624bd9532b)
